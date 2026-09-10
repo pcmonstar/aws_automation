@@ -16,5 +16,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run a test
-        run: echo "Hello from GitHub Actions!"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pytest
+        run: python -m pip install pytest
+
+      - name: Run application
+        run: python python/app.py
+
+      - name: Run tests
+        run: |
+          cd python
+          python -m pytest
