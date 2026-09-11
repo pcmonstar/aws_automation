@@ -21,6 +21,12 @@ permissions:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+          
+    strategy:
+      matrix:
+        directory:
+          - terraform
+          - VM provision
 
     steps:
       - name: Checkout
@@ -36,11 +42,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform checks and plan
-        strategy:
-          matrix:
-            directory:
-              - terraform
-              - VM provision
+
         working-directory: ${{ matrix.directory }}
         run: |
           terraform init -input=false
