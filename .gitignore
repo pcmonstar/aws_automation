@@ -11,3 +11,7 @@ crash.*.log
 
 # Terraform plan files
 *.plan
+
+# Local Terraform variable files may contain secrets
+*.tfvars
+!terraform.tfvars.example

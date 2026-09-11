@@ -2,11 +2,17 @@ name: Terraform CI
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.tfvars.example'
+      - '.github/workflows/ci.yml'
   pull_request:
-    branches:
-      - main
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.tfvars.example'
+      - '.github/workflows/ci.yml'
 
 permissions:
   id-token: write
@@ -17,7 +23,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Terraform Apply
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        working-directory: terraform
-        run: terraform apply -auto-approve
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::977399288165:role/GitHubActionsTerraformRole
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform checks and plan
+        strategy:
+          matrix:
+            directory:
+              - terraform
+              - VM provision
+        working-directory: ${{ matrix.directory }}
+        run: |
+          terraform init -input=false
+          terraform fmt -check
+          terraform validate
+          if [ -f terraform.tfvars.example ]; then
+            terraform plan -input=false -var-file=terraform.tfvars.example
+          else
+            terraform plan -input=false
+          fi
